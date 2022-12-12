@@ -1,7 +1,6 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Request } from '@nestjs/common';
 import { AuthDto } from './auth.dto';
 import { AuthenticationService } from './authentication.service';
-import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller()
 export class AuthenticationController {
@@ -16,12 +15,16 @@ export class AuthenticationController {
     };
   }
 
-  @UseGuards(LocalAuthGuard)
   @Post('signin')
-  async signin(@Request() req) {
+  async signin(@Body() dto: AuthDto) {
+    const user = await this.authenticationService.validateUser(
+      dto.email,
+      dto.password,
+    );
+
     return {
-      user: req.user,
-      token: this.authenticationService.getJwtToken(req.user.email),
+      user: user,
+      token: this.authenticationService.getJwtToken(dto.email),
     };
   }
 }
