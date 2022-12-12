@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { AuthDto } from './auth.dto';
 import { AuthenticationService } from './authentication.service';
 import { LocalAuthGuard } from './local-auth.guard';
 
@@ -8,8 +8,8 @@ export class AuthenticationController {
   constructor(private authenticationService: AuthenticationService) {}
 
   @Post('signup')
-  async signup(@Body() data: Prisma.UserCreateInput) {
-    const user = await this.authenticationService.signup(data);
+  async signup(@Body() dto: AuthDto) {
+    const user = await this.authenticationService.signup(dto);
     return {
       user,
       token: this.authenticationService.getJwtToken(user.email),
