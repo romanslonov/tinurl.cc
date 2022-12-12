@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthDto } from './auth.dto';
 import { AuthenticationService } from './authentication.service';
 
@@ -7,24 +7,12 @@ export class AuthenticationController {
   constructor(private authenticationService: AuthenticationService) {}
 
   @Post('signup')
-  async signup(@Body() dto: AuthDto) {
-    const user = await this.authenticationService.signup(dto);
-    return {
-      user,
-      token: this.authenticationService.getJwtToken(user.email),
-    };
+  signup(@Body() dto: AuthDto) {
+    return this.authenticationService.signup(dto);
   }
 
   @Post('signin')
   async signin(@Body() dto: AuthDto) {
-    const user = await this.authenticationService.validateUser(
-      dto.email,
-      dto.password,
-    );
-
-    return {
-      user: user,
-      token: this.authenticationService.getJwtToken(dto.email),
-    };
+    return this.authenticationService.signin(dto.email, dto.password);
   }
 }

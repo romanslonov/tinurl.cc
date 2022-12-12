@@ -4,6 +4,7 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { AuthDto } from './auth.dto';
+import { JWTPayload } from './types';
 
 @Injectable()
 export class AuthenticationService {
@@ -21,7 +22,9 @@ export class AuthenticationService {
         password: hashedPassword,
       });
 
-      return user;
+      const token = this.getJwtToken(user.id);
+
+      return { user, token };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -32,6 +35,23 @@ export class AuthenticationService {
         }
       }
       throw error;
+    }
+  }
+
+  async signin(email: string, plainTextPassword: string) {
+    try {
+      const { password, ...user } = await this.userService.findByEmail(email);
+
+      await this.verifyPassword(plainTextPassword, password);
+
+      const token = this.getJwtToken(user.id);
+
+      return { user, token };
+    } catch (error) {
+      throw new HttpException(
+        'Wrong credentials provided.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -49,22 +69,8 @@ export class AuthenticationService {
     }
   }
 
-  async validateUser(email: string, plainTextPassword: string) {
-    try {
-      const { password, ...user } = await this.userService.findByEmail(email);
-      await this.verifyPassword(plainTextPassword, password);
-
-      return user;
-    } catch (error) {
-      throw new HttpException(
-        'Wrong credentials provided.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  getJwtToken(email: string) {
-    const payload = { email };
+  getJwtToken(userId: number) {
+    const payload: JWTPayload = { sub: userId };
 
     return this.jwtService.sign(payload);
   }
