@@ -1,7 +1,7 @@
 {
-  "name": "backend",
+  "name": "tinurl-api",
   "version": "0.0.1",
-  "description": "Backend of TinURL",
+  "description": "API of TinURL",
   "author": "Roman Slonov",
   "license": "MIT",
   "scripts": {
